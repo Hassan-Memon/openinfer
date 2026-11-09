@@ -86,6 +86,8 @@ class ChatResult:
     usage: Usage
     finish_reason: str = "stop"
     tool_calls: list[dict[str, Any]] | None = None
+    # Chain of thought from reasoning models (DeepSeek R1 style), kept apart from content.
+    reasoning: str | None = None
     model: str = ""
     backend: str = ""
 
@@ -95,6 +97,7 @@ class ChatChunk:
     """One streamed delta. The last chunk carries `finish_reason` and, if known, `usage`."""
 
     delta: str | None = None
+    reasoning: str | None = None
     tool_calls: list[dict[str, Any]] | None = None
     finish_reason: str | None = None
     usage: Usage | None = None

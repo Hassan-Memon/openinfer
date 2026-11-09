@@ -186,6 +186,7 @@ def parse_chat_completion(data: dict[str, Any], request: ChatRequest) -> ChatRes
     usage = _parse_usage(data.get("usage"), request.prompt_text(), content or "")
     return ChatResult(
         content=content,
+        reasoning=message.get("reasoning_content") or message.get("reasoning") or None,
         tool_calls=message.get("tool_calls") or None,
         finish_reason=choice.get("finish_reason") or "stop",
         usage=usage,
@@ -208,6 +209,7 @@ def parse_chunk(payload: dict[str, Any]) -> ChatChunk | None:
     delta = choice.get("delta") or {}
     return ChatChunk(
         delta=delta.get("content"),
+        reasoning=delta.get("reasoning_content") or delta.get("reasoning") or None,
         tool_calls=delta.get("tool_calls") or None,
         finish_reason=choice.get("finish_reason"),
         usage=parsed_usage,

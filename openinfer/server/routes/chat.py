@@ -159,6 +159,8 @@ def _chunk_to_openai(
     delta: dict[str, Any] = {}
     if chunk.delta:
         delta["content"] = chunk.delta
+    if chunk.reasoning:
+        delta["reasoning_content"] = chunk.reasoning
     if chunk.tool_calls:
         delta["tool_calls"] = [
             {**tc, "index": tc.get("index", i)} for i, tc in enumerate(chunk.tool_calls)

@@ -110,6 +110,7 @@ class OllamaBackend(Backend):
         tool_calls = _convert_tool_calls(message.get("tool_calls"))
         return ChatResult(
             content=content,
+            reasoning=message.get("thinking") or None,
             tool_calls=tool_calls,
             finish_reason="tool_calls" if tool_calls else _finish(data.get("done_reason")),
             usage=_usage(data, request.prompt_text(), content or ""),
@@ -132,12 +133,14 @@ class OllamaBackend(Backend):
                     if data.get("done"):
                         yield ChatChunk(
                             delta=message.get("content") or None,
+                            reasoning=message.get("thinking") or None,
                             finish_reason=_finish(data.get("done_reason")),
                             usage=_usage(data, request.prompt_text(), ""),
                         )
                         return
                     yield ChatChunk(
                         delta=message.get("content") or None,
+                        reasoning=message.get("thinking") or None,
                         tool_calls=_convert_tool_calls(message.get("tool_calls")),
                     )
         except Exception as exc:

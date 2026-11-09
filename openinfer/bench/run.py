@@ -87,10 +87,11 @@ async def bench_backend(
         completion_tokens: int | None = None
         try:
             async for chunk in backend.chat_stream(request):
-                if chunk.delta and first is None:
+                text = (chunk.delta or "") + (chunk.reasoning or "")
+                if text and first is None:
                     first = time.perf_counter()
-                if chunk.delta:
-                    parts.append(chunk.delta)
+                if text:
+                    parts.append(text)
                 if chunk.usage is not None:
                     completion_tokens = chunk.usage.completion_tokens
         except OpenInferError as exc:

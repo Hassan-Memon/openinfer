@@ -18,8 +18,8 @@ async def create_embeddings(body: EmbeddingsRequest, request: Request) -> Any:
     inputs = body.inputs()
     if not inputs:
         raise InvalidRequest("input must not be empty")
-    if body.encoding_format not in (None, "float"):
-        raise InvalidRequest("only encoding_format='float' is supported")
+    if body.encoding_format not in (None, "float", "base64"):
+        raise InvalidRequest("encoding_format must be 'float' or 'base64'")
     r: Router = request.app.state.router
     hints = parse_hints(request.headers, body.openinfer, body.metadata)
     result, entry = await r.embed(
@@ -34,6 +34,6 @@ async def create_embeddings(body: EmbeddingsRequest, request: Request) -> Any:
         attempts=entry.attempts,
     )
     return JSONResponse(
-        embeddings_response(result, info),
+        embeddings_response(result, info, base64_encode=body.encoding_format == "base64"),
         headers={"X-OpenInfer-Backend": entry.backend, "X-OpenInfer-Model": entry.model},
     )

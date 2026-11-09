@@ -8,7 +8,9 @@ See docs/learn/03-concepts/openai-compatible-apis-and-sse.md.
 
 from __future__ import annotations
 
+import base64
 import json
+import struct
 import time
 import uuid
 from typing import Any
@@ -190,6 +192,8 @@ def chat_completion_response(
     message: dict[str, Any] = {"role": "assistant", "content": result.content}
     if result.tool_calls:
         message["tool_calls"] = result.tool_calls
+    if result.reasoning:
+        message["reasoning_content"] = result.reasoning
     return {
         "id": completion_id,
         "object": "chat.completion",
@@ -248,11 +252,19 @@ def usage_only_chunk(
     }
 
 
-def embeddings_response(result: EmbeddingResult, info: dict[str, Any]) -> dict[str, Any]:
+def embeddings_response(
+    result: EmbeddingResult, info: dict[str, Any], *, base64_encode: bool = False
+) -> dict[str, Any]:
+    """`encoding_format: base64` packs each vector as little endian float32, which is what the
+    OpenAI SDKs request by default and decode client side."""
     return {
         "object": "list",
         "data": [
-            {"object": "embedding", "index": i, "embedding": vec}
+            {
+                "object": "embedding",
+                "index": i,
+                "embedding": _b64_floats(vec) if base64_encode else vec,
+            }
             for i, vec in enumerate(result.vectors)
         ],
         "model": result.model,
@@ -262,6 +274,10 @@ def embeddings_response(result: EmbeddingResult, info: dict[str, Any]) -> dict[s
         },
         "openinfer": info,
     }
+
+
+def _b64_floats(vec: list[float]) -> str:
+    return base64.b64encode(struct.pack(f"<{len(vec)}f", *vec)).decode("ascii")
 
 
 def sse(data: dict[str, Any] | str) -> str:

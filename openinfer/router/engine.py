@@ -370,8 +370,8 @@ class Router:
                         usage = first.usage or usage
                         yield first
                     async for chunk in stream:
-                        if chunk.delta:
-                            parts.append(chunk.delta)
+                        if chunk.delta or chunk.reasoning:
+                            parts.append((chunk.delta or "") + (chunk.reasoning or ""))
                         if chunk.usage:
                             usage = chunk.usage
                         yield chunk
