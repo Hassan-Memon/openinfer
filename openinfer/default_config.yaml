@@ -1,0 +1,123 @@
+# OpenInfer routing policy.
+#
+# A request names a model. That name is either an alias (fast, smart, private, embed),
+# a fully qualified "backend/model", or a bare model name served by some backend.
+# The router turns the name into an ordered list of candidates, drops the ones the
+# request's constraints rule out (privacy, cost, latency), then tries them in order
+# with retries and exponential backoff. See docs/learn/03-concepts/routing-policies-and-fallbacks.md.
+#
+# Environment variables can be referenced as ${VAR} or ${VAR:-default}.
+
+server:
+  host: ${OPENINFER_HOST:-0.0.0.0}
+  port: ${OPENINFER_PORT:-8000}
+  # Optional bearer token. Empty means no auth.
+  api_key: ${OPENINFER_API_KEY:-}
+
+ledger:
+  # sqlite:///relative/path.db, sqlite:////absolute/path.db, or postgresql://... (extra "postgres")
+  url: ${OPENINFER_LEDGER_URL:-sqlite:///./openinfer.db}
+
+backends:
+  # Deterministic test backend. Zero cost, always available, no network.
+  echo:
+    type: echo
+    models: [echo]
+    embedding_models: [echo-embed]
+
+  # Ollama on this machine. Only used if it answers; otherwise the chain falls through.
+  ollama:
+    type: ollama
+    base_url: ${OLLAMA_BASE_URL:-http://localhost:11434}
+    models: ["qwen2.5:0.5b", "llama3.2:1b"]
+    embedding_models: ["nomic-embed-text"]
+    expected_latency_ms: 1500
+
+  # llama.cpp in-process (uv sync --extra llamacpp, then `openinfer download-model`).
+  llamacpp:
+    type: llamacpp
+    model_path: ${LLAMACPP_MODEL_PATH:-models/qwen2.5-0.5b-instruct-q4_k_m.gguf}
+    models: ["qwen2.5-0.5b-instruct"]
+    n_ctx: 4096
+    n_gpu_layers: -1       # offload everything the detected accelerator can take
+    enabled: false         # flip to true once the extra is installed and the GGUF downloaded
+
+  # vLLM or any other OpenAI-compatible server you run yourself.
+  vllm:
+    type: vllm
+    base_url: ${VLLM_BASE_URL:-http://localhost:8001/v1}
+    models: ["Qwen/Qwen2.5-1.5B-Instruct"]
+    enabled: false
+
+  # Cloud providers. A backend with api_key_env set is only enabled when that variable is set.
+  groq:
+    type: cloud
+    preset: groq
+    api_key_env: GROQ_API_KEY
+    models: ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]
+    expected_latency_ms: 600
+
+  openrouter:
+    type: cloud
+    preset: openrouter
+    api_key_env: OPENROUTER_API_KEY
+    models: ["meta-llama/llama-3.3-70b-instruct:free", "qwen/qwen-2.5-7b-instruct:free"]
+    expected_latency_ms: 2500
+
+  gemini:
+    type: cloud
+    preset: gemini
+    api_key_env: GEMINI_API_KEY
+    models: ["gemini-2.0-flash", "gemini-2.0-flash-lite"]
+    embedding_models: ["text-embedding-004"]
+    expected_latency_ms: 1200
+
+  openai:
+    type: cloud
+    preset: openai
+    api_key_env: OPENAI_API_KEY
+    models: ["gpt-4o-mini", "gpt-4o"]
+    embedding_models: ["text-embedding-3-small"]
+    expected_latency_ms: 1500
+
+# Aliases map a friendly name to an ordered fallback chain of backend/model pairs.
+# Disabled or unhealthy backends are skipped, so this file is safe with zero API keys.
+aliases:
+  fast:
+    - groq/llama-3.1-8b-instant
+    - gemini/gemini-2.0-flash-lite
+    - ollama/qwen2.5:0.5b
+    - llamacpp/qwen2.5-0.5b-instruct
+    - echo/echo
+  smart:
+    - groq/llama-3.3-70b-versatile
+    - openrouter/meta-llama/llama-3.3-70b-instruct:free
+    - gemini/gemini-2.0-flash
+    - openai/gpt-4o-mini
+    - ollama/llama3.2:1b
+    - echo/echo
+  private:
+    - llamacpp/qwen2.5-0.5b-instruct
+    - ollama/qwen2.5:0.5b
+    - echo/echo
+  embed:
+    - ollama/nomic-embed-text
+    - gemini/text-embedding-004
+    - echo/echo-embed
+
+policy:
+  default_alias: fast
+  # Requests carrying this tag may only be served by local backends. Cloud candidates are
+  # removed from the chain before any network call. If nothing local is left the request
+  # fails closed with HTTP 422 instead of leaking data to a cloud provider.
+  private_tag: private
+  # Global ceilings. A request can tighten them with the X-OpenInfer-Max-Cost-USD and
+  # X-OpenInfer-Max-Latency-Ms headers (or the "openinfer" object in the JSON body).
+  max_cost_usd: null
+  max_latency_ms: null
+  # Retries per backend for transient failures (429, 5xx, timeouts), then move to the next candidate.
+  retries: 2
+  backoff_base_ms: 200
+  backoff_max_ms: 4000
+  # Used for cost estimation before a request is sent when max_tokens is not given.
+  default_max_tokens: 512

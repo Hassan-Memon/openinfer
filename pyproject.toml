@@ -68,7 +68,7 @@ target-version = "py312"
 extend-exclude = ["docs", ".venv"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "W", "SIM", "RUF"]
+select = ["E", "F", "I", "UP", "B", "W", "SIM", "RUF", "BLE"]
 ignore = ["RUF012", "B008"]
 
 [tool.pytest.ini_options]

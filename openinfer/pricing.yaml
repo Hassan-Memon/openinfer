@@ -1,0 +1,35 @@
+# Cloud model prices in USD per 1 million tokens.
+#
+# These are indicative list prices as published on provider pricing pages, last reviewed
+# November 2026. Providers change prices; treat this as a default and override per backend in
+# openinfer.yaml (`pricing:`) when it matters. Models with 0/0 are free tier endpoints.
+# Local backends (echo, ollama, llamacpp, vllm) cost 0 unless you give them an amortised price.
+providers:
+  groq:
+    llama-3.1-8b-instant: { input: 0.05, output: 0.08 }
+    llama-3.3-70b-versatile: { input: 0.59, output: 0.79 }
+    gemma2-9b-it: { input: 0.20, output: 0.20 }
+    mixtral-8x7b-32768: { input: 0.24, output: 0.24 }
+    whisper-large-v3: { input: 0.0, output: 0.0 }
+
+  openai:
+    gpt-4o-mini: { input: 0.15, output: 0.60 }
+    gpt-4o: { input: 2.50, output: 10.00 }
+    gpt-4.1-mini: { input: 0.40, output: 1.60 }
+    gpt-4.1-nano: { input: 0.10, output: 0.40 }
+    text-embedding-3-small: { input: 0.02, output: 0.0 }
+    text-embedding-3-large: { input: 0.13, output: 0.0 }
+    whisper-1: { input: 0.0, output: 0.0 }
+
+  gemini:
+    gemini-2.0-flash: { input: 0.10, output: 0.40 }
+    gemini-2.0-flash-lite: { input: 0.075, output: 0.30 }
+    gemini-1.5-flash: { input: 0.075, output: 0.30 }
+    gemini-1.5-pro: { input: 1.25, output: 5.00 }
+    text-embedding-004: { input: 0.0, output: 0.0 }
+
+  openrouter:
+    "meta-llama/llama-3.3-70b-instruct:free": { input: 0.0, output: 0.0 }
+    "qwen/qwen-2.5-7b-instruct:free": { input: 0.0, output: 0.0 }
+    "meta-llama/llama-3.3-70b-instruct": { input: 0.12, output: 0.30 }
+    "meta-llama/llama-3.1-8b-instruct": { input: 0.02, output: 0.05 }
