@@ -14,6 +14,7 @@ uvx openinfer serve          # http://localhost:8000/docs  (zero keys needed)
 
 ```python
 from openai import OpenAI
+
 client = OpenAI(base_url="http://localhost:8000/v1", api_key="unused")
 client.chat.completions.create(model="fast", messages=[{"role": "user", "content": "hi"}])
 ```
