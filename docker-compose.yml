@@ -1,0 +1,45 @@
+# Local stack. `docker compose up` runs OpenInfer on the echo backend with zero keys.
+# Add `--profile ollama` to also start Ollama and have real local models in the chain:
+#   docker compose --profile ollama up
+#   docker compose exec ollama ollama pull qwen2.5:0.5b
+name: openinfer
+
+services:
+  openinfer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openinfer:local
+    ports:
+      - "${OPENINFER_PORT:-8000}:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      OPENINFER_HOST: 0.0.0.0
+      OPENINFER_PORT: "8000"
+      OPENINFER_LEDGER_URL: sqlite:////data/openinfer.db
+      # Inside the compose network Ollama is reachable by service name, not localhost.
+      OLLAMA_BASE_URL: http://ollama:11434
+    volumes:
+      - ledger:/data
+      - ./openinfer.yaml:/app/openinfer.yaml:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ledger:
+  ollama:
