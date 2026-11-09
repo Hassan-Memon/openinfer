@@ -12,6 +12,7 @@ YAML is parsed, so the file can be committed while secrets stay in `.env`.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 from importlib import resources
@@ -34,10 +35,31 @@ def expand_env(text: str, env: dict[str, str] | None = None) -> str:
         name, default = match.group(1), match.group(2)
         value = source.get(name)
         if value is None or value == "":
-            return default if default is not None else ""
-        return value
+            value = default if default is not None else ""
+        # A placeholder the author already wrapped in quotes is substituted verbatim.
+        before = text[match.start() - 1] if match.start() > 0 else ""
+        after = text[match.end()] if match.end() < len(text) else ""
+        if before in "\"'" or after in "\"'":
+            return value
+        return _yaml_safe(value)
 
     return _ENV_PATTERN.sub(replace, text)
+
+
+_PLAIN_SCALAR = re.compile(r"^-?\d+(\.\d+)?$|^(true|false|null|yes|no|on|off|~)$", re.I)
+_YAML_UNSAFE = re.compile(r"[:#{}\[\],&*!|>'\"%@`]|^\s|\s$|^-")
+
+
+def _yaml_safe(value: str) -> str:
+    """Quote a substituted value when bare YAML would misread it (e.g. `sqlite:///:memory:`).
+
+    Numbers and booleans stay bare so `port: ${OPENINFER_PORT:-8000}` still parses as int.
+    """
+    if value == "" or _PLAIN_SCALAR.match(value):
+        return value
+    if _YAML_UNSAFE.search(value):
+        return json.dumps(value)
+    return value
 
 
 class ModelPrice(BaseModel):
