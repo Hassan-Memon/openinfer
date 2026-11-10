@@ -9,7 +9,7 @@ cloud by **privacy, latency and cost**. Breaks CUDA lock-in; keeps private data 
 ![license](https://img.shields.io/badge/license-Apache--2.0-green)
 
 ```bash
-uvx openinfer serve          # http://localhost:8000/docs  (zero keys needed)
+uvx --from git+https://github.com/Hassan-Memon/openinfer openinfer serve   # http://localhost:8000/docs, zero keys needed
 ```
 
 ```python
@@ -27,7 +27,7 @@ Point any OpenAI SDK, LangChain `ChatOpenAI(base_url=...)`, or `curl` at it. Ask
 | Problem | What OpenInfer does |
 |---|---|
 | Every inference stack assumes one vendor's GPU | One GGUF file runs through llama.cpp on CPU, Metal, CUDA, ROCm; Ollama and vLLM plug in over HTTP; cloud is one more backend |
-| Private data must not leave the building, but the cloud model is better for everything else | Tag a request `private` and only local backends are eligible. If none is up the request fails closed (HTTP 422), it never falls through to the cloud |
+| Private data must not leave the building, but the cloud model is better for everything else | Tag a request `private` and only local backends are eligible. If none can serve it the request fails (HTTP 422 when policy leaves no candidate, 502 when every local candidate is down); it never falls through to the cloud |
 | Nobody knows what inference costs until the invoice | Every request writes tokens, cost, latency and time to first token to a ledger; `/v1/ledger`, `/metrics` and `openinfer bench` read it back |
 | Switching providers means rewriting clients | The API is OpenAI's. Clients keep their SDK; only the base URL changes |
 | Free tiers and rate limits make single-provider setups flaky | Alias chains with retries and exponential backoff fall through Groq, Gemini, OpenRouter, Ollama, llama.cpp, in the order you choose |
@@ -97,7 +97,7 @@ Code map: `openinfer/server` (routes and OpenAI shapes), `openinfer/router` (pol
 ### Zero install
 
 ```bash
-uvx openinfer serve                      # uv runs it from PyPI into a cached env
+uvx --from git+https://github.com/Hassan-Memon/openinfer openinfer serve   # uv installs it from GitHub into a cached env
 curl localhost:8000/v1/chat/completions -H 'content-type: application/json' \
   -d '{"model":"fast","messages":[{"role":"user","content":"ping"}]}'
 ```
@@ -206,6 +206,7 @@ openinfer download-model [--repo Qwen/Qwen2.5-0.5B-Instruct-GGUF] [--file ...]
 
 ## Deploy for free
 
+- Landing page: [openinfer.hassan-memon.workers.dev](https://openinfer.hassan-memon.workers.dev), a static Cloudflare Worker in `site/` with an in-browser router playground. Deploy it with `cd site && npx wrangler@4 deploy`.
 - [Hugging Face Spaces (Docker, CPU)](docs/deploy/huggingface-spaces.md): public demo on echo or a 0.5B GGUF
 - [Render free web service](docs/deploy/render.md): Docker, sleeps when idle
 - [Oracle Cloud Always Free ARM](docs/deploy/oracle-always-free.md): 4 OCPU / 24 GB, llama.cpp with NEON, the best free "real model" option

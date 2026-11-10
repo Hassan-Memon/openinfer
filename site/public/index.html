@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenInfer</title>
+<meta name="description" content="One model, any hardware. An OpenAI-compatible inference runtime that routes each request local or cloud by privacy, latency and cost.">
+<meta property="og:title" content="OpenInfer: one model, any hardware">
+<meta property="og:description" content="OpenAI-compatible inference runtime with a privacy, latency and cost router. Open source, Apache-2.0.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f766e'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#fbfaf7;--surface:#ffffff;--surface-2:#f2f0ea;--text:#1c1b19;--muted:#5d5a53;--border:#e3dfd5;
+  --accent:#0f766e;--accent-ink:#ffffff;--accent-soft:#e3f2ef;--warn:#9a3412;--warn-soft:#fdebe1;--ok:#166534;--ok-soft:#e4f4e8;
+  --code-bg:#1c1b19;--code-text:#efece4;
+  --radius:12px;--max:1080px;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121211;--surface:#1b1b19;--surface-2:#232320;--text:#ecebe6;--muted:#a3a097;--border:#33322e;
+  --accent:#2dd4bf;--accent-ink:#0b1f1d;--accent-soft:#12302c;--warn:#fdba74;--warn-soft:#3a2416;--ok:#86efac;--ok-soft:#14301c;
+  --code-bg:#0c0c0b;--code-text:#ecebe6;
+}}
+:root[data-theme="dark"]{
+  --bg:#121211;--surface:#1b1b19;--surface-2:#232320;--text:#ecebe6;--muted:#a3a097;--border:#33322e;
+  --accent:#2dd4bf;--accent-ink:#0b1f1d;--accent-soft:#12302c;--warn:#fdba74;--warn-soft:#3a2416;--ok:#86efac;--ok-soft:#14301c;
+  --code-bg:#0c0c0b;--code-text:#ecebe6;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--sans)}
+a{color:var(--accent)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 16px}
+header.top{border-bottom:1px solid var(--border)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;text-decoration:none;color:var(--text)}
+.brand-mark{width:26px;height:26px;border-radius:7px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink);font-weight:800;font-size:15px}
+nav.links{display:flex;gap:16px;align-items:center;font-size:14px}
+nav.links a{color:var(--muted);text-decoration:none}
+nav.links a:hover{color:var(--text)}
+.theme{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+.hero{padding:64px 0 40px}
+.eyebrow{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:clamp(34px,6vw,56px);line-height:1.08;margin:12px 0 16px;letter-spacing:-.02em}
+.lede{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:720px;margin:0 0 28px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;font-weight:600;text-decoration:none;border:1px solid var(--border);color:var(--text);background:var(--surface)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+pre,code{font-family:var(--mono)}
+.cmd{position:relative;background:var(--code-bg);color:var(--code-text);border-radius:var(--radius);padding:16px 56px 16px 16px;overflow-x:auto;font-size:14px;margin:0}
+.copy{position:absolute;top:10px;right:10px;background:var(--code-bg);border:1px solid #4a4843;color:var(--code-text);border-radius:6px;font-size:12px;padding:3px 8px;cursor:pointer}
+section{padding:44px 0;border-top:1px solid var(--border)}
+h2{font-size:clamp(24px,3.4vw,32px);margin:0 0 8px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 24px;max-width:720px}
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:0;color:var(--muted);font-size:15px}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th{font-weight:600;color:var(--muted);background:var(--surface-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+/* playground */
+.play{display:grid;gap:16px;grid-template-columns:minmax(0,320px) minmax(0,1fr)}
+@media (max-width:760px){.play{grid-template-columns:1fr}}
+fieldset{border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:0;background:var(--surface)}
+legend{font-weight:600;padding:0 6px}
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field label.t{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:14px;cursor:pointer;background:var(--bg)}
+.seg input{accent-color:var(--accent)}
+.checks label{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0;cursor:pointer}
+.checks input{accent-color:var(--accent)}
+.result{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:16px}
+.chain{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:8px}
+.chain li{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:8px 12px;background:var(--bg);font-size:14px}
+.chain .name{font-family:var(--mono);font-size:13px;flex:1;min-width:0;overflow-wrap:anywhere}
+.tag{font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.tag.served{background:var(--accent);color:var(--accent-ink)}
+.tag.skip{background:var(--warn-soft);color:var(--warn)}
+.tag.down{background:var(--surface-2);color:var(--muted)}
+.tag.next{background:var(--ok-soft);color:var(--ok)}
+.chain li.dim .name{color:var(--muted);text-decoration:line-through}
+.verdict{font-size:15px;margin:0 0 10px}
+.verdict.fail{color:var(--warn);font-weight:600}
+pre.json{background:var(--code-bg);color:var(--code-text);border-radius:10px;padding:12px;font-size:12.5px;overflow-x:auto;margin:0}
+/* architecture */
+.arch{display:grid;gap:12px;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch}
+.arch .arrow{display:grid;place-items:center;color:var(--muted);font-size:22px}
+@media (max-width:760px){.arch{grid-template-columns:1fr}.arch .arrow{transform:rotate(90deg);height:24px}}
+.arch .box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.arch .box.core{border-color:var(--accent);background:var(--accent-soft)}
+.arch h4{margin:0 0 6px;font-size:15px}
+.arch ul{margin:0;padding-left:18px;font-size:14px;color:var(--muted)}
+footer{border-top:1px solid var(--border);padding:32px 0 48px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
+footer a{color:var(--muted)}
+@media (max-width:560px){nav.links a.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">+</span>OpenInfer</a>
+    <nav class="links" aria-label="Primary">
+      <a class="hide-sm" href="#playground">Playground</a>
+      <a class="hide-sm" href="#bench">Benchmarks</a>
+      <a href="https://github.com/Hassan-Memon/openinfer">GitHub</a>
+      <button class="theme" id="theme" type="button" aria-label="Toggle colour theme">Theme</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap hero">
+  <div class="eyebrow">Open source inference runtime</div>
+  <h1>One model, any hardware.</h1>
+  <p class="lede">An OpenAI-compatible server that runs the same model on CPU, Apple Metal, NVIDIA CUDA, AMD ROCm or an NPU, and decides for every request whether it runs locally or in the cloud, by privacy, latency and cost.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/Hassan-Memon/openinfer">View on GitHub</a>
+    <a class="btn" href="#playground">Try the router</a>
+    <a class="btn" href="https://github.com/Hassan-Memon/openinfer/tree/main/docs/learn">Read how it works</a>
+  </div>
+  <pre class="cmd" id="cmd"><code>uvx --from git+https://github.com/Hassan-Memon/openinfer openinfer serve</code><button class="copy" type="button" data-copy="#cmd code">Copy</button></pre>
+  <p class="note">Runs with zero API keys. With no models configured it answers from a deterministic echo backend, so the whole API works on the first try.</p>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>Why it exists</h2>
+    <p class="sub">Inference today means picking one vendor's GPU, one vendor's API, and hoping the bill is reasonable. OpenInfer puts a policy layer in front of all of them.</p>
+    <div class="grid g3">
+      <div class="card"><h3>No hardware lock-in</h3><p>One GGUF file runs through llama.cpp on CPU, Metal, CUDA or ROCm. Ollama and vLLM plug in over HTTP. A cloud API is just one more backend.</p></div>
+      <div class="card"><h3>Private stays private</h3><p>Tag a request <code>private</code> and only local backends are eligible. If no local backend can serve it, the request fails instead of falling through to the cloud.</p></div>
+      <div class="card"><h3>Cost you can see</h3><p>Every request records tokens, cost, latency and time to first token. Read it back from <code>/v1/ledger</code>, Prometheus <code>/metrics</code> or the bench command.</p></div>
+      <div class="card"><h3>Your SDK already works</h3><p>The API is OpenAI's wire format. Point the OpenAI SDK, LangChain or curl at it and change only the base URL.</p></div>
+      <div class="card"><h3>Free tiers, made reliable</h3><p>Alias chains retry with exponential backoff and fall through Groq, Gemini, OpenRouter, Ollama and llama.cpp in the order you choose.</p></div>
+      <div class="card"><h3>Policy is a file</h3><p>Aliases, privacy rules, cost and latency ceilings live in <code>openinfer.yaml</code>. Operators change behaviour without a deploy, and auditors can read it.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="playground">
+  <div class="wrap">
+    <h2>Router playground</h2>
+    <p class="sub">This runs the router's selection rules in your browser, using the default alias chains from the repo's <code>openinfer.yaml</code>. Choose a request and switch backends off to see the fallback and the privacy rule at work.</p>
+    <div class="play">
+      <fieldset>
+        <legend>Request</legend>
+        <div class="field">
+          <label class="t" id="alias-l">Model alias</label>
+          <div class="seg" role="radiogroup" aria-labelledby="alias-l" id="aliases"></div>
+        </div>
+        <div class="field">
+          <label class="t" id="tag-l">Privacy</label>
+          <div class="checks" aria-labelledby="tag-l">
+            <label><input type="checkbox" id="private"> Tag as <code>private</code> (local backends only)</label>
+          </div>
+        </div>
+        <div class="field">
+          <label class="t" id="up-l">Backends that are up</label>
+          <div class="checks" id="backends" aria-labelledby="up-l"></div>
+        </div>
+      </fieldset>
+      <div class="result" aria-live="polite">
+        <p class="verdict" id="verdict"></p>
+        <ol class="chain" id="chain"></ol>
+        <pre class="json" id="json"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="bench">
+  <div class="wrap">
+    <h2>Measured, not claimed</h2>
+    <p class="sub">Output of <code>openinfer bench</code> on a Windows 11 laptop, CPU only, with Ollama running locally. No GPU.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Backend</th><th>Model</th><th>Where</th><th class="num">Time to first token, p50</th><th class="num">Generated tokens/s</th><th class="num">Total p50</th><th class="num">USD per 1M output tokens</th></tr></thead>
+        <tbody>
+          <tr><td>ollama</td><td>deepseek-r1:1.5b</td><td>local</td><td class="num">380 ms</td><td class="num">16.0</td><td class="num">3,376 ms</td><td class="num">0.00</td></tr>
+          <tr><td>echo</td><td>echo</td><td>local</td><td class="num">0.1 ms</td><td class="num">171,059</td><td class="num">0.2 ms</td><td class="num">0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The echo row is the test backend and shows only server overhead. Run <code>openinfer bench</code> on your own machine to get your numbers.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>How a request flows</h2>
+    <p class="sub">Clients speak OpenAI. The router picks a backend. The ledger records what happened.</p>
+    <div class="arch">
+      <div class="box"><h4>Clients</h4><ul><li>OpenAI SDK</li><li>LangChain</li><li>curl, any HTTP client</li></ul></div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="box core"><h4>OpenInfer</h4><ul><li>/v1/chat/completions, SSE streaming</li><li>/v1/embeddings, /v1/models</li><li>Router: aliases, privacy, cost, latency, fallback</li><li>Ledger and /metrics</li></ul></div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="box"><h4>Backends</h4><ul><li>Local: llama.cpp, Ollama, vLLM</li><li>Cloud: Groq, Gemini, OpenRouter, OpenAI</li><li>Echo for tests and demos</li></ul></div>
+    </div>
+    <pre class="cmd" style="margin-top:20px" id="sdk"><code>from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="unused")
+client.chat.completions.create(
+    model="private",
+    messages=[{"role": "user", "content": "Summarise this patient note"}],
+)</code><button class="copy" type="button" data-copy="#sdk code">Copy</button></pre>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Read the engineering</h2>
+    <p class="sub">The repo is written to be learned from: decision records for every major choice, and a short course on the concepts behind it.</p>
+    <div class="grid g3">
+      <a class="card" style="text-decoration:none;color:inherit" href="https://github.com/Hassan-Memon/openinfer/tree/main/docs/adr"><h3>Decision records</h3><p>Why the OpenAI wire format, why policy as YAML, why llama.cpp first, why privacy fails closed.</p></a>
+      <a class="card" style="text-decoration:none;color:inherit" href="https://github.com/Hassan-Memon/openinfer/tree/main/docs/learn"><h3>Learning track</h3><p>Architecture walkthrough, system design trade-offs, quantization, accelerators and cost accounting.</p></a>
+      <a class="card" style="text-decoration:none;color:inherit" href="https://github.com/Hassan-Memon/openinfer/blob/main/docs/positioning.md"><h3>Positioning</h3><p>How it compares with NVIDIA NIM, Apple on-device models, the OpenAI API, Ollama, LiteLLM and vLLM.</p></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>Built by Hassan Memon. Apache-2.0.</div>
+    <div>Also: <a href="https://agentmesh.hassan-memon.workers.dev">AgentMesh</a> · <a href="https://intakeagent.hassan-memon.workers.dev">IntakeAgent</a> · <a href="https://truerate.hassan-memon.workers.dev">TrueRate</a></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Theme toggle, remembered per browser when storage is available.
+  var root=document.documentElement;
+  try{var saved=localStorage.getItem('oi-theme');if(saved)root.setAttribute('data-theme',saved);}catch(e){}
+  document.getElementById('theme').addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    var next=cur==='dark'?'light':'dark';root.setAttribute('data-theme',next);
+    try{localStorage.setItem('oi-theme',next);}catch(e){}
+  });
+  document.querySelectorAll('[data-copy]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var t=document.querySelector(b.getAttribute('data-copy')).textContent;
+      (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1400)},function(){});
+    });
+  });
+
+  // Default alias chains, copied from openinfer.yaml in the repo.
+  var ALIASES={
+    fast:['groq/llama-3.1-8b-instant','gemini/gemini-2.0-flash-lite','ollama/qwen2.5:0.5b','echo/echo'],
+    smart:['groq/llama-3.3-70b-versatile','openrouter/meta-llama/llama-3.3-70b-instruct:free','echo/echo'],
+    'private':['llamacpp/qwen2.5-0.5b-instruct','ollama/qwen2.5:0.5b','echo/echo'],
+    embed:['ollama/nomic-embed-text','gemini/text-embedding-004','echo/echo-embed']
+  };
+  var LOCAL={llamacpp:true,ollama:true,vllm:true,echo:true};
+  var BACKENDS=['groq','gemini','openrouter','ollama','llamacpp','echo'];
+  var up={groq:true,gemini:true,openrouter:true,ollama:true,llamacpp:false,echo:true};
+  var alias='fast';
+
+  var aliasBox=document.getElementById('aliases');
+  Object.keys(ALIASES).forEach(function(a){
+    var l=document.createElement('label');
+    l.innerHTML='<input type="radio" name="alias" value="'+a+'"'+(a===alias?' checked':'')+'> '+a;
+    aliasBox.appendChild(l);
+  });
+  aliasBox.addEventListener('change',function(e){alias=e.target.value;render();});
+  var beBox=document.getElementById('backends');
+  BACKENDS.forEach(function(b){
+    var l=document.createElement('label');
+    l.innerHTML='<input type="checkbox" data-be="'+b+'"'+(up[b]?' checked':'')+'> '+b+' <span style="color:var(--muted);font-size:12px">('+(LOCAL[b]?'local':'cloud')+')</span>';
+    beBox.appendChild(l);
+  });
+  beBox.addEventListener('change',function(e){up[e.target.getAttribute('data-be')]=e.target.checked;render();});
+  document.getElementById('private').addEventListener('change',render);
+
+  function esc(s){return s.replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function render(){
+    var priv=document.getElementById('private').checked;
+    var chain=ALIASES[alias];var rows=[];var candidates=[];
+    // Step 1, plan: policy filters run before any network call.
+    chain.forEach(function(entry){
+      var be=entry.split('/')[0];
+      if(priv&&!LOCAL[be]){rows.push({entry:entry,tag:'skip',label:'removed: cloud',dim:true});}
+      else{var r={entry:entry};rows.push(r);candidates.push(r);}
+    });
+    // Step 2, execute: try candidates in order, fall through on failure.
+    var served=null;var attempts=0;
+    candidates.forEach(function(r){
+      var be=r.entry.split('/')[0];
+      if(served){r.tag='next';r.label='not needed';return;}
+      attempts++;
+      if(!up[be]){r.tag='down';r.label='unavailable, next';r.dim=true;return;}
+      served=r.entry;r.tag='served';r.label='serves request';
+    });
+    document.getElementById('chain').innerHTML=rows.map(function(r){
+      return '<li class="'+(r.dim?'dim':'')+'"><span class="name">'+esc(r.entry)+'</span><span class="tag '+r.tag+'">'+r.label+'</span></li>';
+    }).join('');
+    var v=document.getElementById('verdict');var j=document.getElementById('json');
+    if(served){
+      var be=served.split('/')[0];
+      v.className='verdict';
+      v.textContent='Served by '+served+(LOCAL[be]?', on this machine.':', in the cloud.')+(attempts>1?' '+(attempts-1)+' earlier candidate'+(attempts>2?'s were':' was')+' down.':'');
+      j.textContent=JSON.stringify({openinfer:{backend:be,model:served.slice(be.length+1),alias:alias,attempts:attempts,local:!!LOCAL[be]}},null,2);
+    }else if(!candidates.length){
+      v.className='verdict fail';
+      v.textContent='HTTP 422: the privacy policy removed every candidate, so the request fails closed before any call is made.';
+      j.textContent=JSON.stringify({error:{type:'invalid_request_error',message:'Policy removed every candidate'}},null,2);
+    }else{
+      v.className='verdict fail';
+      v.textContent='HTTP 502: every candidate failed.'+(priv?' The cloud backends were never tried, because the request is private.':'');
+      j.textContent=JSON.stringify({error:{type:'backend_error',message:'All candidates failed',attempts:attempts}},null,2);
+    }
+  }
+  render();
+})();
+</script>
+</body>
+</html>

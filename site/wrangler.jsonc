@@ -1,0 +1,12 @@
+{
+  // Static landing page for OpenInfer on Cloudflare Workers (free plan).
+  // Deploy from this folder: npx wrangler@4 deploy
+  // Address: https://openinfer.hassan-memon.workers.dev
+  "name": "openinfer",
+  "compatibility_date": "2025-09-01",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  }
+}

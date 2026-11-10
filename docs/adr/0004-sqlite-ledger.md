@@ -12,7 +12,7 @@ time to first token, attempts, status. The router also reads back recent latency
 
 ## Decision drivers
 
-- `uvx openinfer serve` must work with no services running.
+- `uvx --from git+https://github.com/Hassan-Memon/openinfer openinfer serve` must work with no services running.
 - Writes are small and frequent (one row per request); reads are aggregates over hours or days.
 - Several replicas behind a load balancer should be able to share one ledger eventually.
 - No prompt or completion text is stored, so the data is low sensitivity but still operational.

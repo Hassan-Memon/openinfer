@@ -39,7 +39,7 @@ always answers. It is marked `local = True` because nothing leaves the process.
 
 - Positive: 100+ tests run in a few seconds with no network; the OpenAI SDK round trip is a real
   end-to-end test.
-- Positive: `uvx openinfer serve` works on the first try for everyone.
+- Positive: `uvx --from git+https://github.com/Hassan-Memon/openinfer openinfer serve` works on the first try for everyone.
 - Negative: a chain that silently ends in echo can hide an outage in production. Operators
   should remove `echo/echo` from production chains or alert on
   `openinfer_requests_total{backend="echo"}`; the docs say so.

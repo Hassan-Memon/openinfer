@@ -34,7 +34,7 @@ UI, or in a configuration file that ships with the deployment.
 Option 3. `openinfer.yaml` declares backends, alias chains (ordered lists of `backend/model`)
 and a `policy` block (private tag, ceilings, retries, backoff). `${VAR:-default}` references are
 expanded before parsing (`openinfer/config.py`), with automatic quoting of values that YAML would
-misread. A copy ships inside the package as the default, so `uvx openinfer serve` works without
+misread. A copy ships inside the package as the default, so `uvx --from git+https://github.com/Hassan-Memon/openinfer openinfer serve` works without
 a file; a test asserts the repo example and the packaged default stay identical.
 
 The router (`openinfer/router/engine.py`) is deliberately simple: resolve, filter, try in
