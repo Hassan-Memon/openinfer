@@ -28,3 +28,6 @@ models/
 Thumbs.db
 .idea/
 .vscode/
+
+# Cloudflare Wrangler local state
+.wrangler/

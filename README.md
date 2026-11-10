@@ -8,6 +8,10 @@ cloud by **privacy, latency and cost**. Breaks CUDA lock-in; keeps private data 
 ![python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue)
 ![license](https://img.shields.io/badge/license-Apache--2.0-green)
 
+> **Live page: [openinfer.hassan-memon.workers.dev](https://openinfer.hassan-memon.workers.dev).**
+> Try the router playground in your browser, see the measured benchmarks, and copy the install
+> command below. The server itself runs on your own machine.
+
 ```bash
 uvx --from git+https://github.com/Hassan-Memon/openinfer openinfer serve   # http://localhost:8000/docs, zero keys needed
 ```
@@ -214,6 +218,7 @@ openinfer download-model [--repo Qwen/Qwen2.5-0.5B-Instruct-GGUF] [--file ...]
 
 ## Documentation
 
+- [docs/README.md](docs/README.md): a map of every document in this repository
 - `docs/learn/` teaching track: [architecture walkthrough](docs/learn/01-architecture-walkthrough.md), [system design trade-offs](docs/learn/02-system-design-tradeoffs.md), [concepts](docs/learn/03-concepts/), [interview talk track](docs/learn/04-interview-talk-track.md), [run it yourself](docs/learn/05-run-it-yourself.md)
 - `docs/adr/` decision records: [OpenAI-compatible API](docs/adr/0001-openai-compatible-api.md), [policy as YAML](docs/adr/0002-router-policy-as-yaml.md), [llama.cpp first](docs/adr/0003-llamacpp-first.md), [SQLite ledger](docs/adr/0004-sqlite-ledger.md), [privacy routing](docs/adr/0005-privacy-routing-fail-closed.md), [echo backend](docs/adr/0006-echo-backend-for-tests-and-demos.md)
 - [docs/positioning.md](docs/positioning.md): who this is for and how it compares to NVIDIA NIM, Apple on-device, the OpenAI API, Ollama, LiteLLM and vLLM
@@ -221,7 +226,7 @@ openinfer download-model [--repo Qwen/Qwen2.5-0.5B-Instruct-GGUF] [--file ...]
 
 ## Status
 
-Pre-1.0. The echo, Ollama, vLLM and cloud paths are tested; the Ollama path was also verified
+Pre-1.0, version 0.1.0. See [CHANGELOG.md](CHANGELOG.md) for the full history. The echo, Ollama, vLLM and cloud paths are tested; the Ollama path was also verified
 against a real local model. llama.cpp and faster-whisper are optional extras and exercised
 manually. See [docs/learn/02-system-design-tradeoffs.md](docs/learn/02-system-design-tradeoffs.md)
 for what breaks first at scale.
